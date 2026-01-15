@@ -88,6 +88,11 @@ services:
     #   - "3888:3888"
     volumes:
       - zookeeper-1:/bitnami/zookeeper
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 512m
     environment:
       - ZOO_SERVER_ID=1
       - ALLOW_ANONYMOUS_LOGIN=yes
@@ -97,6 +102,11 @@ services:
   clickhouse:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"   # максимум 1 vCPU
+          memory: 2g    # до 2 ГБ RAM
     # ports:
     #   - "9000:9000"
     #   - "8123:8123"
@@ -142,6 +152,11 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "0.7"
+          memory: 1g
   otel-collector:
     !!merge <<: *db-depend
     image: signoz/signoz-otel-collector:${OTELCOL_TAG:-v0.129.12}
@@ -164,6 +179,12 @@ services:
     depends_on:
       signoz:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512m
+        
   schema-migrator-sync:
     !!merge <<: *common
     image: signoz/signoz-schema-migrator:${OTELCOL_TAG:-v0.129.12}
