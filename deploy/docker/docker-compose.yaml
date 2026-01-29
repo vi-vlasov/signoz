@@ -105,8 +105,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0"   # максимум 1 vCPU
-          memory: 2g    # до 2 ГБ RAM
+          cpus: "1.0" # максимум 1 vCPU
+          memory: 4g # до 2 ГБ RAM
     # ports:
     #   - "9000:9000"
     #   - "8123:8123"
@@ -184,7 +184,7 @@ services:
         limits:
           cpus: "0.5"
           memory: 512m
-        
+
   schema-migrator-sync:
     !!merge <<: *common
     image: signoz/signoz-schema-migrator:${OTELCOL_TAG:-v0.129.12}
