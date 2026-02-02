@@ -1,6 +1,7 @@
 import { OptionData } from 'components/NewSelect/types';
 import { isEmpty, isNull } from 'lodash-es';
-import { Dashboard, IDashboardVariable } from 'types/api/dashboard/getAll';
+import { IDashboardVariables } from 'providers/Dashboard/store/dashboardVariablesStore';
+import { IDashboardVariable } from 'types/api/dashboard/getAll';
 
 export function areArraysEqual(
 	a: (string | number | boolean)[],
@@ -21,7 +22,7 @@ export function areArraysEqual(
 
 export const convertVariablesToDbFormat = (
 	variblesArr: IDashboardVariable[],
-): Dashboard['data']['variables'] =>
+): IDashboardVariables =>
 	variblesArr.reduce((result, obj: IDashboardVariable) => {
 		const { id } = obj;
 
@@ -141,7 +142,9 @@ const collectCyclePath = (
 
 	while (current !== end) {
 		const parent = findParent(current);
-		if (!parent) break;
+		if (!parent) {
+			break;
+		}
 		path.push(parent);
 		current = parent;
 	}
@@ -194,10 +197,16 @@ export const buildDependencyGraph = (
 
 	// Initialize in-degree and adjacency list
 	Object.keys(dependencies).forEach((node) => {
-		if (!inDegree[node]) inDegree[node] = 0;
-		if (!adjList[node]) adjList[node] = [];
+		if (!inDegree[node]) {
+			inDegree[node] = 0;
+		}
+		if (!adjList[node]) {
+			adjList[node] = [];
+		}
 		dependencies[node]?.forEach((child) => {
-			if (!inDegree[child]) inDegree[child] = 0;
+			if (!inDegree[child]) {
+				inDegree[child] = 0;
+			}
 			inDegree[child]++;
 			adjList[node].push(child);
 		});
@@ -234,7 +243,9 @@ export const buildDependencyGraph = (
 
 		adjList[current]?.forEach((neighbor) => {
 			inDegree[neighbor]--;
-			if (inDegree[neighbor] === 0) queue.push(neighbor);
+			if (inDegree[neighbor] === 0) {
+				queue.push(neighbor);
+			}
 		});
 	}
 
@@ -256,6 +267,15 @@ export const onUpdateVariableNode = (
 	callback: (node: string) => void,
 ): void => {
 	const visited = new Set<string>();
+
+	// If nodeToUpdate is not in topologicalOrder (e.g., CUSTOM variable),
+	// we still need to mark its children as needing updates
+	if (!topologicalOrder.includes(nodeToUpdate)) {
+		// Mark direct children of the node as visited so they get processed
+		(graph[nodeToUpdate] || []).forEach((child) => {
+			visited.add(child);
+		});
+	}
 
 	// Start processing from the node to update
 	topologicalOrder.forEach((node) => {
